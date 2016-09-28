@@ -1,7 +1,6 @@
 var last_x;
 var last_y;
-var subscriber = undefined;
-
+var subscriber;
 var mousePosition = Rx.Observable.fromEvent(document, "mousemove");
 
 function bootstrapCanvas() {
@@ -47,7 +46,6 @@ function toggleDraw(){
         last_x = undefined;
         last_y = undefined;
     }
-
 }
 
 document.addEventListener('click', function(){
