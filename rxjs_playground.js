@@ -1,9 +1,8 @@
 var last_x;
 var last_y;
+var subscriber = undefined;
 
-var counter = function() {
-    return Rx.Observable.fromEvent(document, "mousemove");
-}
+var mousePosition = Rx.Observable.fromEvent(document, "mousemove");
 
 function bootstrapCanvas() {
     var canvas = document.getElementById("mainCanvas");
@@ -19,19 +18,40 @@ function drawLine(toCoords){
     ctx.stroke();
 }
 
-counter().subscribe(function(mouseEvent){
-    if (last_x === undefined || last_y === undefined){
-        console.log("Don't have start coords, setting to x = " + mouseEvent.clientX + " y = " + mouseEvent.clientY);
-        //just store the latest
-        last_x = mouseEvent.clientX;
-        last_y = mouseEvent.clientY;
+function subscribeMousePosition(){
+    return mousePosition.subscribe(function (mouseEvent) {
+        if (last_x === undefined || last_y === undefined) {
+            //just store the latest
+            last_x = mouseEvent.clientX;
+            last_y = mouseEvent.clientY;
+        } else {
+            drawLine(
+                {
+                    x: mouseEvent.clientX,
+                    y: mouseEvent.clientY
+                });
+            last_x = mouseEvent.clientX;
+            last_y = mouseEvent.clientY;
+        }
+    });
+}
+
+function toggleDraw(){
+    console.log("Inside toggle draw");
+    if(subscriber === undefined || subscriber.isStopped){
+        console.log("subscribing to mouse events");
+        subscriber = subscribeMousePosition();
     }else{
-        drawLine(
-            {
-                x:mouseEvent.clientX,
-                y: mouseEvent.clientY
-            });
-        last_x = mouseEvent.clientX;
-        last_y = mouseEvent.clientY;
+        console.log("unsubcribing");
+        subscriber.unsubscribe();
+        last_x = undefined;
+        last_y = undefined;
     }
-});
+
+}
+
+document.addEventListener('click', function(){
+    console.log("In click listener");
+    toggleDraw();
+}, true);
+
